@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { ProductResult } from "@/components/ProductResult";
+import { PhotoContribution } from "@/components/PhotoContribution";
 import type { Product, SumiEvaluation } from "@/lib/types";
 
 type State =
@@ -65,12 +66,12 @@ export default function Home() {
             Codigo {state.barcode}. Ayuda a la comunidad Sumi: toma una foto de
             la tabla nutricional y la IA la leera por ti.
           </p>
-          <button
-            disabled
-            className="w-full rounded-xl bg-slate-200 px-4 py-3 text-sm font-semibold text-slate-500"
-          >
-            📸 Aportar con foto + IA (proximamente)
-          </button>
+          <PhotoContribution
+            barcode={state.barcode}
+            onResult={(product, evaluation) =>
+              setState({ status: "found", product, evaluation })
+            }
+          />
           <ResetButton onReset={() => setState({ status: "idle" })} />
         </div>
       )}
