@@ -10,7 +10,8 @@
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "import:off": "vite-node scripts/import-off.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",

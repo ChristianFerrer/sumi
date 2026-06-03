@@ -80,6 +80,28 @@ sin depender de que la marca los declare.
 
 ---
 
+## Importación masiva desde Open Food Facts
+
+Para no depender de que cada producto se escanee uno por uno, Sumi siembra su
+base con el catálogo peruano de OFF (filtrado por país, `countries_tags_en=peru`).
+Es 100% fuente abierta (licencia ODbL) y al ingerir ya calcula Sumi-Score y
+octógonos con el mismo motor de la app.
+
+- **Lógica:** `src/lib/off-import.ts` (recorre OFF paginado y hace *upsert*
+  idempotente por `barcode` — re-ejecutar actualiza, no duplica).
+- **Mantenimiento automático:** endpoint `GET /api/cron/import-off`, disparado
+  por **Vercel Cron** cada lunes (ver `vercel.json`). Protegido con `CRON_SECRET`.
+  Acepta `?pages=`, `?start=` y `?size=` para acotar/continuar corridas grandes.
+- **Corrida manual:** `npm run import:off` (`PAGES=20 START=21 npm run import:off`
+  para limitar/continuar). Lee credenciales de `.env.local`.
+
+> Calidad de datos: solo se asigna nota a alimentos/bebidas **con** datos
+> nutricionales; el resto queda *pendiente de datos* (sin nota inventada).
+> Sin scraping de retailers, el catálogo abierto trae menos precios e imágenes
+> — a cambio de **cero riesgo legal**.
+
+---
+
 ## Stack
 
 - **Next.js 15** (App Router) como **PWA** instalable — sin app store.
