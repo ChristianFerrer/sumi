@@ -54,6 +54,22 @@ describe("normalizeOffProduct", () => {
     const p = normalizeOffProduct("7750000000003", { nutriments: {} });
     expect(p.name).toBe("Producto sin nombre");
   });
+
+  it("descarta valores fisicamente imposibles de OFF", () => {
+    const p = normalizeOffProduct("7750000000004", {
+      product_name: "Dato sucio",
+      nutriments: {
+        "energy-kcal_100g": 5000, // imposible -> se descarta
+        sugars_100g: 250, // > 100 g -> se descarta
+        proteins_100g: 8, // valido -> se conserva
+        sodium_100g: 80, // 80 g -> 80000 mg, supera 40000 -> se descarta
+      },
+    });
+    expect(p.nutriments.energyKcal).toBeUndefined();
+    expect(p.nutriments.sugars).toBeUndefined();
+    expect(p.nutriments.sodium).toBeUndefined();
+    expect(p.nutriments.proteins).toBe(8);
+  });
 });
 
 describe("searchPeruvianProducts", () => {

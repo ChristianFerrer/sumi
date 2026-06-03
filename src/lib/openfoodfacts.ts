@@ -51,6 +51,17 @@ function sodiumMg(nutr: Record<string, unknown>): number | undefined {
   return undefined;
 }
 
+/**
+ * Descarta valores fisicamente imposibles. La data de OFF es colaborativa y a
+ * veces trae errores de unidades (p.ej. un macronutriente > 100 g por 100 g, o
+ * una energia disparatada). Mejor dejarlo vacio ("pendiente de datos") que
+ * inflar o hundir la nota con basura.
+ */
+function plausible(value: number | undefined, max: number): number | undefined {
+  if (value == null) return undefined;
+  return value >= 0 && value <= max ? value : undefined;
+}
+
 function detectKind(categories: string[], isBeverage: boolean): ProductKind {
   if (categories.some((c) => c.includes("cosmetic") || c.includes("beauty"))) {
     return "cosmetic";
@@ -71,15 +82,20 @@ export function normalizeOffProduct(
   const categories = (raw["categories_tags"] as string[]) ?? [];
   const isBeverage = categories.some((c) => c.includes("beverage") || c.includes("drink"));
 
+  // Limites fisicos por 100 g/ml: los gramos no pueden pasar de 100, la energia
+  // tope ~900 kcal (grasa pura), el sodio tope ~40 000 mg (sal pura).
   const nutriments: Nutriments = {
-    energyKcal: num(nutr["energy-kcal_100g"]),
-    sugars: num(nutr["sugars_100g"]),
-    saturatedFat: num(nutr["saturated-fat_100g"]),
-    transFat: num(nutr["trans-fat_100g"]),
-    sodium: sodiumMg(nutr),
-    fiber: num(nutr["fiber_100g"]),
-    proteins: num(nutr["proteins_100g"]),
-    fruitsVegetablesNuts: num(nutr["fruits-vegetables-nuts-estimate-from-ingredients_100g"]),
+    energyKcal: plausible(num(nutr["energy-kcal_100g"]), 1000),
+    sugars: plausible(num(nutr["sugars_100g"]), 100),
+    saturatedFat: plausible(num(nutr["saturated-fat_100g"]), 100),
+    transFat: plausible(num(nutr["trans-fat_100g"]), 100),
+    sodium: plausible(sodiumMg(nutr), 40000),
+    fiber: plausible(num(nutr["fiber_100g"]), 100),
+    proteins: plausible(num(nutr["proteins_100g"]), 100),
+    fruitsVegetablesNuts: plausible(
+      num(nutr["fruits-vegetables-nuts-estimate-from-ingredients_100g"]),
+      100,
+    ),
   };
 
   const additives = ((raw["additives_tags"] as string[]) ?? []).map((t) =>

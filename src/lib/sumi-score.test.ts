@@ -53,11 +53,12 @@ describe("evaluateProduct", () => {
     expect(e.score).toBeLessThanOrEqual(50);
   });
 
-  it("las grasas trans limitan la nota a 25", () => {
+  it("las grasas trans (desde el umbral) limitan la nota a 25", () => {
     const p = makeProduct({
-      nutriments: { sugars: 1, sodium: 10, saturatedFat: 0.1, transFat: 0.3 },
+      nutriments: { sugars: 1, sodium: 10, saturatedFat: 0.1, transFat: 0.6 },
     });
     const e = evaluateProduct(p);
+    expect(e.octogonos.map((o) => o.nutrient)).toContain("grasas_trans");
     expect(e.score).toBeLessThanOrEqual(25);
   });
 

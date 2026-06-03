@@ -28,9 +28,13 @@ describe("calcularOctogonos (Ley 30021, Fase 2)", () => {
     expect(calcularOctogonos({ sodium: 400 }, false)).toHaveLength(1);
   });
 
-  it("advierte grasas trans ante cualquier cantidad presente", () => {
-    const o = calcularOctogonos({ transFat: 0.1 }, false);
-    expect(o.map((x) => x.nutrient)).toContain("grasas_trans");
+  it("ignora trazas naturales de grasas trans (< 0.5 g) pero advierte desde el umbral", () => {
+    // 0.1 g (p.ej. trazas naturales de la leche) no debe marcar octogono.
+    expect(calcularOctogonos({ transFat: 0.1 }, false)).toHaveLength(0);
+    // 0.5 g o mas si lo marca.
+    expect(
+      calcularOctogonos({ transFat: 0.5 }, false).map((x) => x.nutrient),
+    ).toContain("grasas_trans");
   });
 
   it("puede acumular varios octogonos a la vez", () => {

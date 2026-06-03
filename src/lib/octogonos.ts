@@ -15,11 +15,16 @@ export const UMBRALES_OCTOGONOS = {
     azucar: 10, // g de azucar total por 100 g
     sodio: 400, // mg de sodio por 100 g
     grasas_saturadas: 4, // g por 100 g
+    // Grasas trans: usamos el estandar internacional "libre de trans"
+    // (< 0.5 g/100 g). Por debajo de eso son trazas naturales (p.ej. las de
+    // los lacteos) que no ameritan la advertencia "evitar su consumo".
+    grasas_trans: 0.5,
   },
   liquido: {
     azucar: 5, // g de azucar total por 100 ml
     sodio: 100, // mg de sodio por 100 ml
     grasas_saturadas: 3, // g por 100 ml
+    grasas_trans: 0.5, // g por 100 ml
   },
 } as const;
 
@@ -59,8 +64,11 @@ export function calcularOctogonos(
       label: ETIQUETAS.grasas_saturadas,
     });
   }
-  // Las grasas trans se advierten ante cualquier cantidad presente.
-  if (nutriments.transFat != null && nutriments.transFat > 0) {
+  // Grasas trans: se advierten a partir del umbral (no por trazas naturales).
+  if (
+    nutriments.transFat != null &&
+    nutriments.transFat >= umbral.grasas_trans
+  ) {
     octogonos.push({ nutrient: "grasas_trans", label: ETIQUETAS.grasas_trans });
   }
 

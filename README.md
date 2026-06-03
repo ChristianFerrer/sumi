@@ -73,7 +73,7 @@ Así un producto "alto en azúcar" **nunca** sale como excelente.
 | Azúcar total | ≥ 10 g | ≥ 5 g |
 | Sodio | ≥ 400 mg | ≥ 100 mg |
 | Grasas saturadas | ≥ 4 g | ≥ 3 g |
-| Grasas trans | contiene → advertir | contiene → advertir |
+| Grasas trans | ≥ 0.5 g (estándar "libre de trans") | ≥ 0.5 g |
 
 Definidos en `src/lib/octogonos.ts`. Sumi los **calcula** desde los nutrientes,
 sin depender de que la marca los declare.
