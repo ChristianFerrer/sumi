@@ -5,11 +5,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Paleta Sumi — inspirada en lo andino/natural
+        // Paleta Sumi — ámbar cálido
         sumi: {
-          DEFAULT: "#0f766e", // teal andino
-          dark: "#134e4a",
-          light: "#5eead4",
+          DEFAULT: "#f39c12",
+          dark: "#b9770b",
+          light: "#f8c471",
         },
         // Colores de nota (semaforo Sumi)
         grade: {
