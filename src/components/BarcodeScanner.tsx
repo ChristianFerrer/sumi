@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { BrowserMultiFormatReader } from "@zxing/browser";
+import { ScanLine } from "lucide-react";
 
 /**
  * Escaner de codigo de barras en el navegador (sin app store, fiel al "tipo PWA").
@@ -53,8 +54,8 @@ export function BarcodeScanner({
             }}
             className="flex aspect-square w-full flex-col items-center justify-center gap-2 bg-sumi text-white"
           >
-            <span className="text-5xl">📷</span>
-            <span className="font-semibold">Escanear codigo de barras</span>
+            <ScanLine size={56} strokeWidth={1.5} />
+            <span className="font-semibold">Escanear código de barras</span>
           </button>
         )}
       </div>

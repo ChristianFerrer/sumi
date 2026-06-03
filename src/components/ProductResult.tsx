@@ -1,3 +1,4 @@
+import { ShoppingBasket, Lightbulb } from "lucide-react";
 import type { Product, SumiEvaluation } from "@/lib/types";
 import { ScoreBadge } from "./ScoreBadge";
 import { OctagonWarnings } from "./OctagonWarnings";
@@ -37,8 +38,8 @@ export function ProductResult({
             className="h-16 w-16 rounded-lg object-contain"
           />
         ) : (
-          <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-slate-100 text-2xl">
-            🛒
+          <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-slate-100 text-slate-400">
+            <ShoppingBasket size={28} strokeWidth={1.5} />
           </div>
         )}
         <div>
@@ -74,8 +75,9 @@ export function ProductResult({
       {/* Diferenciador de Sumi: no solo advierte, propone que hacer. */}
       {evaluation.level !== "excelente" && (
         <div className="rounded-2xl border border-sumi/30 bg-sumi-light/10 p-4">
-          <h3 className="mb-1 text-sm font-semibold text-sumi-dark">
-            💡 Mejor que esto
+          <h3 className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-sumi-dark">
+            <Lightbulb size={16} />
+            Mejor que esto
           </h3>
           <p className="text-sm text-slate-700">
             Pronto Sumi te recomendara una alternativa mas saludable, del mismo

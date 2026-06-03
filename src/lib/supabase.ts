@@ -99,6 +99,66 @@ export async function cacheProduct(
   );
 }
 
+/** Busca productos por nombre en la base propia (cache + aportes). */
+export async function searchProducts(query: string): Promise<Alternative[]> {
+  if (!client || query.trim().length < 2) return [];
+  const { data, error } = await client
+    .from("products")
+    .select("barcode,name,brand,image_url,score,level")
+    .ilike("name", `%${query.trim()}%`)
+    .order("score", { ascending: false, nullsFirst: false })
+    .limit(25);
+  if (error || !data) return [];
+  return data.map((d) => ({
+    barcode: d.barcode as string,
+    name: d.name as string,
+    brand: (d.brand as string) ?? undefined,
+    imageUrl: (d.image_url as string) ?? undefined,
+    score: d.score as number | null,
+    level: d.level as SumiEvaluation["level"] | null,
+  }));
+}
+
+export interface Alternative {
+  barcode: string;
+  name: string;
+  brand?: string;
+  imageUrl?: string;
+  score: number | null;
+  level: SumiEvaluation["level"] | null;
+}
+
+/**
+ * Busca un producto mejor que el escaneado: del mismo tipo, con mejor nota.
+ * Es la base del motor de alternativas ("mejor que esto") — el diferenciador
+ * de Sumi frente al octogono.
+ */
+export async function findBetterAlternative(
+  kind: Product["kind"],
+  excludeBarcode: string,
+  minScore: number,
+): Promise<Alternative | null> {
+  if (!client) return null;
+  const { data, error } = await client
+    .from("products")
+    .select("barcode,name,brand,image_url,score,level")
+    .eq("kind", kind)
+    .gt("score", minScore)
+    .neq("barcode", excludeBarcode)
+    .order("score", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error || !data) return null;
+  return {
+    barcode: data.barcode as string,
+    name: data.name as string,
+    brand: (data.brand as string) ?? undefined,
+    imageUrl: (data.image_url as string) ?? undefined,
+    score: data.score as number | null,
+    level: data.level as SumiEvaluation["level"] | null,
+  };
+}
+
 /** Registra un aporte de la comunidad (auditoria del flujo foto + IA). */
 export async function saveContribution(
   barcode: string,

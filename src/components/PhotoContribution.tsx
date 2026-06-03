@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { Camera } from "lucide-react";
 import type { Product, SumiEvaluation } from "@/lib/types";
 
 /**
@@ -66,9 +67,10 @@ export function PhotoContribution({
       <button
         onClick={() => inputRef.current?.click()}
         disabled={status === "reading"}
-        className="w-full rounded-xl bg-sumi px-4 py-3 text-sm font-semibold text-white disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-sumi px-4 py-3 text-sm font-semibold text-white disabled:opacity-60"
       >
-        {status === "reading" ? "Leyendo etiqueta con IA…" : "📸 Fotografiar la tabla nutricional"}
+        <Camera size={18} />
+        {status === "reading" ? "Leyendo etiqueta con IA…" : "Fotografiar la tabla nutricional"}
       </button>
       {message && <p className="text-sm text-grade-bad">{message}</p>}
     </div>
