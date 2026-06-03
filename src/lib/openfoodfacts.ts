@@ -141,6 +141,42 @@ export interface OffSearchPage {
   pageSize: number;
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * fetch con reintentos para OFF. OFF a veces responde 429/5xx de forma
+ * transitoria (rate-limit / sobrecarga); reintentamos con backoff exponencial
+ * en vez de abortar la importacion entera.
+ */
+async function fetchOffWithRetry(
+  url: URL | string,
+  signal?: AbortSignal,
+  attempts = 3,
+): Promise<Response> {
+  let lastErr: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const res = await fetch(url, {
+        headers: { "User-Agent": offUserAgent() },
+        signal,
+        cache: "no-store",
+      });
+      // 429/5xx: transitorios -> reintentar; el resto se devuelve tal cual.
+      if (res.status === 429 || res.status >= 500) {
+        lastErr = new Error(`Open Food Facts (search) respondio ${res.status}`);
+      } else {
+        return res;
+      }
+    } catch (err) {
+      lastErr = err;
+    }
+    if (i < attempts - 1) await sleep(1000 * 2 ** i); // 1s, 2s, 4s
+  }
+  throw lastErr instanceof Error
+    ? lastErr
+    : new Error("Open Food Facts (search) fallo tras reintentos");
+}
+
 /**
  * Trae una pagina de productos vendidos en Peru desde el buscador de OFF.
  *
@@ -163,11 +199,7 @@ export async function searchPeruvianProducts(opts: {
   url.searchParams.set("page", String(page));
   url.searchParams.set("page_size", String(pageSize));
 
-  const res = await fetch(url, {
-    headers: { "User-Agent": offUserAgent() },
-    signal: opts.signal,
-    cache: "no-store",
-  });
+  const res = await fetchOffWithRetry(url, opts.signal);
   if (!res.ok) {
     throw new Error(`Open Food Facts (search) respondio ${res.status}`);
   }

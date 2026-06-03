@@ -114,8 +114,12 @@ export interface ImportSummary {
   upserted: number;
   skipped: number;
   pagesFetched: number;
+  /** Paginas que fallaron (tras reintentos) y se saltaron. */
+  failedPages: number;
   lastPage: number;
   totalCount: number;
+  /** Ultimo error encontrado, si lo hubo (la corrida igual continua/termina). */
+  lastError?: string;
 }
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -146,14 +150,38 @@ export async function importPeruvianProducts(
     upserted: 0,
     skipped: 0,
     pagesFetched: 0,
+    failedPages: 0,
     lastPage: startPage - 1,
     totalCount: 0,
   };
 
-  let page = startPage;
-  while (summary.pagesFetched < maxPages) {
+  // Corta la corrida si OFF falla varias paginas seguidas (probable caida).
+  const MAX_CONSECUTIVE_FAILURES = 3;
+  let consecutiveFailures = 0;
+
+  // Recorremos como maximo `maxPages` paginas (exitos + fallos cuentan), asi
+  // un goteo de errores intermitentes no puede alargar la corrida sin limite.
+  for (let i = 0; i < maxPages; i++) {
+    const page = startPage + i;
     log(`Trayendo pagina ${page} de OFF (Peru)...`);
-    const res = await searchPeruvianProducts({ page, pageSize });
+
+    let res;
+    try {
+      res = await searchPeruvianProducts({ page, pageSize });
+      consecutiveFailures = 0;
+    } catch (err) {
+      summary.failedPages++;
+      summary.lastError = err instanceof Error ? err.message : String(err);
+      consecutiveFailures++;
+      log(`Pagina ${page} fallo: ${summary.lastError} (se salta).`);
+      if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+        log("Demasiados fallos seguidos: corto la corrida.");
+        break;
+      }
+      await delay(delayMs);
+      continue;
+    }
+
     summary.totalCount = res.count;
     summary.pagesFetched++;
     summary.lastPage = page;
@@ -173,8 +201,8 @@ export async function importPeruvianProducts(
       rows.push(toProductRow(p));
     }
 
-    for (let i = 0; i < rows.length; i += batchSize) {
-      const chunk = rows.slice(i, i + batchSize);
+    for (let j = 0; j < rows.length; j += batchSize) {
+      const chunk = rows.slice(j, j + batchSize);
       const { error } = await supabase
         .from("products")
         .upsert(chunk, { onConflict: "barcode" });
@@ -194,8 +222,7 @@ export async function importPeruvianProducts(
       log(`Ultima pagina alcanzada (${totalPages} en total).`);
       break;
     }
-    page++;
-    if (summary.pagesFetched < maxPages) await delay(delayMs);
+    await delay(delayMs);
   }
 
   return summary;
