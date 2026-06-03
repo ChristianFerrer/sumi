@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Search, ChevronRight } from "lucide-react";
 import { LEVEL_META, UNKNOWN_COLOR } from "@/lib/format";
 import type { GradeLevel } from "@/lib/types";
@@ -66,7 +67,11 @@ export default function BuscarPage() {
 
       <ul className="divide-y divide-slate-100">
         {results.map((r) => (
-          <li key={r.barcode} className="flex items-center gap-3 py-3">
+          <li key={r.barcode}>
+           <Link
+             href={`/producto/${r.barcode}`}
+             className="flex items-center gap-3 py-3"
+           >
             {r.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={r.imageUrl} alt="" className="h-12 w-12 rounded-lg object-contain" />
@@ -86,6 +91,7 @@ export default function BuscarPage() {
               {r.score ?? "?"}
             </span>
             <ChevronRight size={18} className="text-slate-300" />
+           </Link>
           </li>
         ))}
       </ul>

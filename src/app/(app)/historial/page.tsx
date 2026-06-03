@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Trash2, ChevronRight, Clock } from "lucide-react";
 import {
   clearHistory,
@@ -41,7 +42,11 @@ export default function HistorialPage() {
       ) : (
         <ul className="divide-y divide-slate-100">
           {entries.map((e) => (
-            <li key={e.barcode} className="flex items-center gap-3 py-3">
+            <li key={e.barcode}>
+             <Link
+               href={`/producto/${e.barcode}`}
+               className="flex items-center gap-3 py-3"
+             >
               {e.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -76,6 +81,7 @@ export default function HistorialPage() {
                 </div>
               </div>
               <ChevronRight size={18} className="text-slate-300" />
+             </Link>
             </li>
           ))}
         </ul>
