@@ -9,6 +9,7 @@ import {
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { getSupabaseBrowser } from "@/lib/supabaseBrowser";
+import { setHistoryUser } from "@/lib/history";
 
 interface AuthResult {
   error: string | null;
@@ -43,12 +44,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     supabase.auth.getSession().then(({ data }) => {
       setUser(data.session?.user ?? null);
+      setHistoryUser(data.session?.user?.id ?? null);
       setLoading(false);
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange(
       (event, session: Session | null) => {
         setUser(session?.user ?? null);
+        setHistoryUser(session?.user?.id ?? null);
         if (event === "PASSWORD_RECOVERY") setRecovering(true);
         if (event === "SIGNED_OUT") setRecovering(false);
       },
